@@ -1,0 +1,2 @@
+# Calculator
+Educational project - calculator
