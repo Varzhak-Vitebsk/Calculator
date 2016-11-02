@@ -4,10 +4,11 @@ void Widget::compute()
 {
     if(current_operator)
     {
-        left_operand.setNum(current_operator(left_operand, right_operand));
+        left_operand = current_operator(left_operand, right_operand);
         right_operand = "";
         current_operator = Q_NULLPTR;
         display->display(left_operand);
+        if(left_operand == "Er") left_operand = "0";
     }
 }
 
@@ -19,26 +20,45 @@ Widget::Widget(QWidget *parent)
     display = new QLCDNumber();
     layout_buttons = new QHBoxLayout();
     layout_number_buttons = new QGridLayout();
-    button_1 = new NumberButton("1", "&1");
-    button_2 = new NumberButton("2", "&2");
-    button_3 = new NumberButton("3", "&3");
-    button_4 = new NumberButton("4", "&4");
-    button_5 = new NumberButton("5", "&5");
-    button_6 = new NumberButton("6", "&6");
-    button_7 = new NumberButton("7", "&7");
-    button_8 = new NumberButton("8", "&8");
-    button_9 = new NumberButton("9", "&9");
-    button_0 = new NumberButton("0", "&0");
-    button_separator = new NumberButton(".", "&.");
+    button_1 = new NumberButton("1", "1");
+    button_1->setShortcut(Qt::Key_1);
+    button_2 = new NumberButton("2", "2");
+    button_2->setShortcut(Qt::Key_2);
+    button_3 = new NumberButton("3", "3");
+    button_3->setShortcut(Qt::Key_3);
+    button_4 = new NumberButton("4", "4");
+    button_4->setShortcut(Qt::Key_4);
+    button_5 = new NumberButton("5", "5");
+    button_5->setShortcut(Qt::Key_5);
+    button_6 = new NumberButton("6", "6");
+    button_6->setShortcut(Qt::Key_6);
+    button_7 = new NumberButton("7", "7");
+    button_7->setShortcut(Qt::Key_7);
+    button_8 = new NumberButton("8", "8");
+    button_8->setShortcut(Qt::Key_8);
+    button_9 = new NumberButton("9", "9");
+    button_9->setShortcut(Qt::Key_9);
+    button_0 = new NumberButton("0", "0");
+    button_0->setShortcut(Qt::Key_0);
+    button_separator = new NumberButton(".", ".");
+    button_separator->setShortcut(Qt::Key_Comma);
+    button_separator->setShortcut(Qt::Key_Period);
     layout_operator_buttons = new QGridLayout();
     button_delete_last = new QPushButton("Delete last");
+    button_delete_last->setShortcut(Qt::Key_Backspace);
     button_clear = new QPushButton("Clear");
     button_division = new QPushButton("/");
+    button_division->setShortcut(Qt::Key_Slash);
     button_multiplication = new QPushButton("*");
+    button_multiplication->setShortcut(Qt::Key_Asterisk);
     button_negate = new QPushButton("-");
+    button_negate->setShortcut(Qt::Key_Minus);
     button_add = new QPushButton("+");
+    button_add->setShortcut(Qt::Key_Plus);
     button_result = new QPushButton("=");
-    //-----------
+    button_result->setShortcut(Qt::Key_Equal);
+    button_result->setShortcut(Qt::Key_Enter);
+    //-----------    
     left_operand = right_operand = "";
     operand = Operand::LEFT;
     current_operator = Q_NULLPTR;
@@ -88,7 +108,8 @@ Widget::Widget(QWidget *parent)
     connect(button_result, SIGNAL(clicked()), this, SLOT(resultButtonPush()));
     connect(button_delete_last, SIGNAL(clicked()), this, SLOT(deleteLastButtonPush()));
     connect(button_clear, SIGNAL(clicked()), this, SLOT(clearButtonPush()));
-
+    //---------
+    this->setMinimumSize(500, 400);
 }
 
 Widget::~Widget()
@@ -169,6 +190,7 @@ void Widget::resultButtonPush()
     operand = Operand::LEFT;
     left_operand_part = OperandPart::INTEGER;
     right_operand_part = OperandPart::INTEGER;
+    left_operand = "";
 }
 
 void Widget::deleteLastButtonPush()
@@ -193,22 +215,30 @@ void Widget::clearButtonPush()
     display->display("0");
 }
 
-double OperatorAdd(const QString &lvalue, const QString &rvalue)
+QString OperatorAdd(const QString &lvalue, const QString &rvalue)
 {
-    return (lvalue.toDouble())+(rvalue.toDouble());
+    QString result;
+    result.setNum((lvalue.toDouble())+(rvalue.toDouble()));
+    return result;
 }
 
-double OperatorNegate(const QString &lvalue, const QString &rvalue)
+QString OperatorNegate(const QString &lvalue, const QString &rvalue)
 {
-    return (lvalue.toDouble())-(rvalue.toDouble());
+    QString result;
+    result.setNum((lvalue.toDouble())-(rvalue.toDouble()));
+    return result;
 }
 
-double OperatorDivision(const QString &lvalue, const QString &rvalue)
+QString OperatorDivision(const QString &lvalue, const QString &rvalue)
 {
-    return (lvalue.toDouble())/(rvalue.toDouble());
+    QString result;
+    (rvalue == "0" || rvalue.isEmpty()) ? result = "Er": result.setNum((lvalue.toDouble())/(rvalue.toDouble()));
+    return result;
 }
 
-double OperatorMultiplication(const QString &lvalue, const QString &rvalue)
+QString OperatorMultiplication(const QString &lvalue, const QString &rvalue)
 {
-    return (lvalue.toDouble())*(rvalue.toDouble());
+    QString result;
+    result.setNum((lvalue.toDouble())*(rvalue.toDouble()));
+    return result;
 }

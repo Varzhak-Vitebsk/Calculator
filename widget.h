@@ -2,18 +2,22 @@
 #define WIDGET_H
 
 #include <QtWidgets>
+#include <limits>
 #include "numberbutton.h"
+
 enum class Operand { LEFT, RIGHT };
 enum class OperandPart { INTEGER, FRACTION };
 
-double OperatorAdd(QString const &lvalue, QString const &rvalue);
-double OperatorNegate(QString const &lvalue, QString const &rvalue);
-double OperatorDivision(QString const &lvalue, QString const &rvalue);
-double OperatorMultiplication(QString const &lvalue, QString const &rvalue);
+QString OperatorAdd(QString const &lvalue, QString const &rvalue);
+QString OperatorNegate(QString const &lvalue, QString const &rvalue);
+QString OperatorDivision(QString const &lvalue, QString const &rvalue);
+QString OperatorMultiplication(QString const &lvalue, QString const &rvalue);
 
 class Widget : public QWidget
 {
     Q_OBJECT
+    //typedef std::function <double (const QString&, const QString&)> T;
+
     QVBoxLayout * layout_main;
     QHBoxLayout * layout_display;
     QLCDNumber * display;
@@ -42,7 +46,7 @@ class Widget : public QWidget
     QString left_operand;
     QString right_operand;
     Operand operand;
-    double (* current_operator)(const QString&, const QString&);
+    QString (* current_operator)(const QString&, const QString&);
     OperandPart left_operand_part;
     OperandPart right_operand_part;
     unsigned int DISPLAY_MAX_SIZE;
@@ -58,7 +62,7 @@ private slots:
     void operatorAddButtonPush();
     void operatorNegateButtonPush();
     void operatorDivisionButtonPush();
-    void operatorMultiplicationButtonPush();
+    void operatorMultiplicationButtonPush();    
     void resultButtonPush();
     void deleteLastButtonPush();
     void clearButtonPush();
