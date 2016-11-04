@@ -2,11 +2,11 @@
 
 void Widget::compute()
 {
-    if(current_operator)
+    if(current_operation)
     {
-        left_operand = current_operator(left_operand, right_operand);
+        left_operand = current_operation->computeOperation(left_operand, right_operand);
         right_operand = "";
-        current_operator = Q_NULLPTR;
+        current_operation = Q_NULLPTR;
         display->display(left_operand);
         if(left_operand == "Er") left_operand = "0";
     }
@@ -43,17 +43,17 @@ Widget::Widget(QWidget *parent)
     button_separator = new NumberButton(".", ".");
     button_separator->setShortcut(Qt::Key_Comma);
     button_separator->setShortcut(Qt::Key_Period);
-    layout_operator_buttons = new QGridLayout();
+    layout_operation_buttons = new QGridLayout();
     button_delete_last = new QPushButton("Delete last");
     button_delete_last->setShortcut(Qt::Key_Backspace);
     button_clear = new QPushButton("Clear");
-    button_division = new QPushButton("/");
+    button_division = new OperationButtonDivision("/");
     button_division->setShortcut(Qt::Key_Slash);
-    button_multiplication = new QPushButton("*");
+    button_multiplication = new OperationButtonMultiplication("*");
     button_multiplication->setShortcut(Qt::Key_Asterisk);
-    button_negate = new QPushButton("-");
+    button_negate = new OperationButtonNegate("-");
     button_negate->setShortcut(Qt::Key_Minus);
-    button_add = new QPushButton("+");
+    button_add = new OperationButtonAdd("+");
     button_add->setShortcut(Qt::Key_Plus);
     button_result = new QPushButton("=");
     button_result->setShortcut(Qt::Key_Equal);
@@ -61,6 +61,7 @@ Widget::Widget(QWidget *parent)
     //-----------    
     left_operand = right_operand = "";
     operand = Operand::LEFT;
+    current_operation = Q_NULLPTR;
     current_operator = Q_NULLPTR;
     left_operand_part = right_operand_part = OperandPart::INTEGER;
     DISPLAY_MAX_SIZE = 20;
@@ -70,7 +71,7 @@ Widget::Widget(QWidget *parent)
     layout_main->addWidget(display);
     layout_main->addLayout(layout_buttons);
     layout_buttons->addLayout(layout_number_buttons);
-    layout_buttons->addLayout(layout_operator_buttons);
+    layout_buttons->addLayout(layout_operation_buttons);
     layout_number_buttons->addWidget(button_7, 0, 0, 1, 1);
     layout_number_buttons->addWidget(button_8, 0, 1, 1, 1);
     layout_number_buttons->addWidget(button_9, 0, 2, 1, 1);
@@ -82,13 +83,13 @@ Widget::Widget(QWidget *parent)
     layout_number_buttons->addWidget(button_3, 2, 2, 1, 1);
     layout_number_buttons->addWidget(button_0, 3, 0, 1, 2);
     layout_number_buttons->addWidget(button_separator, 3, 2, 1, 1);
-    layout_operator_buttons->addWidget(button_delete_last, 0, 0, 1, 1);
-    layout_operator_buttons->addWidget(button_clear, 0, 1, 1, 1);
-    layout_operator_buttons->addWidget(button_division, 1, 0, 1, 1);
-    layout_operator_buttons->addWidget(button_multiplication, 1, 1, 1, 1);
-    layout_operator_buttons->addWidget(button_negate, 2, 0, 1, 1);
-    layout_operator_buttons->addWidget(button_add, 2, 1, 1, 1);
-    layout_operator_buttons->addWidget(button_result, 3, 0, 1, 2);
+    layout_operation_buttons->addWidget(button_delete_last, 0, 0, 1, 1);
+    layout_operation_buttons->addWidget(button_clear, 0, 1, 1, 1);
+    layout_operation_buttons->addWidget(button_division, 1, 0, 1, 1);
+    layout_operation_buttons->addWidget(button_multiplication, 1, 1, 1, 1);
+    layout_operation_buttons->addWidget(button_negate, 2, 0, 1, 1);
+    layout_operation_buttons->addWidget(button_add, 2, 1, 1, 1);
+    layout_operation_buttons->addWidget(button_result, 3, 0, 1, 2);
     //---------
     connect(button_1, SIGNAL(sendNumber(QString)), this, SLOT(numberButtonPush(QString)));
     connect(button_2, SIGNAL(sendNumber(QString)), this, SLOT(numberButtonPush(QString)));
@@ -100,11 +101,11 @@ Widget::Widget(QWidget *parent)
     connect(button_8, SIGNAL(sendNumber(QString)), this, SLOT(numberButtonPush(QString)));
     connect(button_9, SIGNAL(sendNumber(QString)), this, SLOT(numberButtonPush(QString)));
     connect(button_0, SIGNAL(sendNumber(QString)), this, SLOT(numberButtonPush(QString)));
-    connect(button_separator, SIGNAL(sendNumber(QString)), this, SLOT(numberButtonPush(QString)));
-    connect(button_division, SIGNAL(clicked()), this, SLOT(operatorDivisionButtonPush()));
-    connect(button_multiplication, SIGNAL(clicked()), this, SLOT(operatorMultiplicationButtonPush()));
-    connect(button_negate, SIGNAL(clicked()), this, SLOT(operatorNegateButtonPush()));
-    connect(button_add, SIGNAL(clicked()), this, SLOT(operatorAddButtonPush()));
+    connect(button_separator, SIGNAL(sendNumber(QString)), this, SLOT(numberButtonPush(QString)));    
+    connect(button_division, SIGNAL(sendThis(OperationButton*)), this, SLOT(operationButtonPush(OperationButton*)));
+    connect(button_multiplication, SIGNAL(sendThis(OperationButton*)), this, SLOT(operationButtonPush(OperationButton*)));
+    connect(button_negate, SIGNAL(sendThis(OperationButton*)), this, SLOT(operationButtonPush(OperationButton*)));
+    connect(button_add, SIGNAL(sendThis(OperationButton*)), this, SLOT(operationButtonPush(OperationButton*)));
     connect(button_result, SIGNAL(clicked()), this, SLOT(resultButtonPush()));
     connect(button_delete_last, SIGNAL(clicked()), this, SLOT(deleteLastButtonPush()));
     connect(button_clear, SIGNAL(clicked()), this, SLOT(clearButtonPush()));
@@ -148,37 +149,10 @@ void Widget::numberButtonPush(QString number)
     }
 }
 
-void Widget::operatorAddButtonPush()
+void Widget::operationButtonPush(OperationButton *button)
 {
     compute();
-    current_operator = &OperatorAdd;
-    operand = Operand::RIGHT;
-    left_operand_part = OperandPart::INTEGER;
-    right_operand_part = OperandPart::INTEGER;
-}
-
-void Widget::operatorNegateButtonPush()
-{
-    compute();
-    current_operator = &OperatorNegate;
-    operand = Operand::RIGHT;
-    left_operand_part = OperandPart::INTEGER;
-    right_operand_part = OperandPart::INTEGER;
-}
-
-void Widget::operatorDivisionButtonPush()
-{
-    compute();
-    current_operator = &OperatorDivision;
-    operand = Operand::RIGHT;
-    left_operand_part = OperandPart::INTEGER;
-    right_operand_part = OperandPart::INTEGER;
-}
-
-void Widget::operatorMultiplicationButtonPush()
-{
-    compute();
-    current_operator = &OperatorMultiplication;
+    current_operation = button;
     operand = Operand::RIGHT;
     left_operand_part = OperandPart::INTEGER;
     right_operand_part = OperandPart::INTEGER;
@@ -213,32 +187,4 @@ void Widget::clearButtonPush()
     current_operator = Q_NULLPTR;
     left_operand_part = right_operand_part = OperandPart::INTEGER;
     display->display("0");
-}
-
-QString OperatorAdd(const QString &lvalue, const QString &rvalue)
-{
-    QString result;
-    result.setNum((lvalue.toDouble())+(rvalue.toDouble()));
-    return result;
-}
-
-QString OperatorNegate(const QString &lvalue, const QString &rvalue)
-{
-    QString result;
-    result.setNum((lvalue.toDouble())-(rvalue.toDouble()));
-    return result;
-}
-
-QString OperatorDivision(const QString &lvalue, const QString &rvalue)
-{
-    QString result;
-    (rvalue == "0" || rvalue.isEmpty()) ? result = "Er": result.setNum((lvalue.toDouble())/(rvalue.toDouble()));
-    return result;
-}
-
-QString OperatorMultiplication(const QString &lvalue, const QString &rvalue)
-{
-    QString result;
-    result.setNum((lvalue.toDouble())*(rvalue.toDouble()));
-    return result;
 }

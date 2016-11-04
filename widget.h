@@ -4,14 +4,13 @@
 #include <QtWidgets>
 #include <limits>
 #include "numberbutton.h"
+#include "operationbuttonadd.h"
+#include "operationbuttonnegate.h"
+#include "operationbuttonmultiplication.h"
+#include "operationbuttondivision.h"
 
 enum class Operand { LEFT, RIGHT };
 enum class OperandPart { INTEGER, FRACTION };
-
-QString OperatorAdd(QString const &lvalue, QString const &rvalue);
-QString OperatorNegate(QString const &lvalue, QString const &rvalue);
-QString OperatorDivision(QString const &lvalue, QString const &rvalue);
-QString OperatorMultiplication(QString const &lvalue, QString const &rvalue);
 
 class Widget : public QWidget
 {
@@ -34,18 +33,19 @@ class Widget : public QWidget
     NumberButton * button_9;
     NumberButton * button_0;
     NumberButton * button_separator;
-    QGridLayout * layout_operator_buttons;
+    QGridLayout * layout_operation_buttons;
     QPushButton * button_delete_last;
     QPushButton * button_clear;
-    QPushButton * button_division;
-    QPushButton * button_multiplication;
-    QPushButton * button_negate;
-    QPushButton * button_add;
+    OperationButtonDivision * button_division;
+    OperationButtonMultiplication * button_multiplication;
+    OperationButtonNegate * button_negate;
+    OperationButtonAdd * button_add;
     QPushButton * button_result;
     //-------
     QString left_operand;
     QString right_operand;
     Operand operand;
+    OperationButton * current_operation;
     QString (* current_operator)(const QString&, const QString&);
     OperandPart left_operand_part;
     OperandPart right_operand_part;
@@ -58,11 +58,8 @@ public:
     ~Widget();
 
 private slots:
-    void numberButtonPush(QString number);
-    void operatorAddButtonPush();
-    void operatorNegateButtonPush();
-    void operatorDivisionButtonPush();
-    void operatorMultiplicationButtonPush();    
+    void numberButtonPush(QString number);        
+    void operationButtonPush(OperationButton * button);
     void resultButtonPush();
     void deleteLastButtonPush();
     void clearButtonPush();

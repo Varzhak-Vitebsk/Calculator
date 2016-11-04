@@ -14,7 +14,17 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         widget.cpp \
-    numberbutton.cpp
+    numberbutton.cpp \
+    operationbutton.cpp \
+    operationbuttonadd.cpp \
+    operationbuttonnegate.cpp \
+    operationbuttondivision.cpp \
+    operationbuttonmultiplication.cpp
 
 HEADERS  += widget.h \
-    numberbutton.h
+    numberbutton.h \
+    operationbutton.h \
+    operationbuttonadd.h \
+    operationbuttonnegate.h \
+    operationbuttondivision.h \
+    operationbuttonmultiplication.h
